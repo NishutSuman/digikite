@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(tree:*)",
+      "Bash(npm run:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(find:*)",
+      "Bash(timeout 10s npm start)",
+      "Bash(npm create:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(./node_modules/.bin/tailwindcss:*)",
+      "Bash(node:*)",
+      "Bash(timeout 10s npm run dev)",
+      "Read(//c/Users/nishu/OneDrive/Pictures/Screenshots/**)",
+      "Bash(timeout 5s npm run dev)",
+      "Bash(curl:*)",
+      "Bash(timeout 8s npm run dev)",
+      "Bash(psql:*)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Read(//c/Users/nishu/OneDrive/Documents/GITHUB/**)",
+      "Bash(rd:*)",
+      "Bash(del package-lock.json)",
+      "Bash(/bashes)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  FACEBOOK
+}
+
+enum ActivityType {
+  USER_REGISTER
+  USER_LOGIN
+  USER_LOGOUT
+  EMAIL_VERIFY
+  PASSWORD_CHANGE
+  PROFILE_UPDATE
+  TICKET_CREATE
+  TICKET_UPDATE
+  TICKET_DELETE
+  PAYMENT_INITIATE
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  PAGE_VIEW
+  FEATURE_USE
+  ERROR_OCCURRED
+  API_CALL
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String?  // Nullable for social login users
+
+  // Authentication fields
+  provider           AuthProvider @default(EMAIL)
+  googleId          String?      @unique
+  emailVerified     Boolean      @default(false)
+
+  // Verification fields
+  verificationToken String?      @unique
+  verificationCode  String?
+  verificationCodeExpires DateTime?
+
+  // Profile fields
+  avatar    String?
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tickets    Ticket[]
+  payments   Payment[]
+  activities Activity[]
+
+  @@map("users")
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  status      String         @default("OPEN")
+  priority    String         @default("MEDIUM")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  amount        Float
+  currency      String   @default("INR")
+  status        String
+  paymentMethod String   @default("RAZORPAY")
+  transactionId String?  @unique
+  razorpayOrderId String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  metadata    Json?        // Additional data like IP, user agent, etc.
+
+  // Optional fields for business intelligence
+  ipAddress    String?
+  userAgent    String?
+  deviceInfo   Json?
+  location     Json?        // Country, city, etc.
+  referrer     String?
+  sessionId    String?
+
+  // Success/error tracking
+  success      Boolean      @default(true)
+  errorMessage String?
+
+  // Performance metrics
+  duration     Int?         // In milliseconds
+
+  // Business metrics
+  revenue      Float?       // For payment-related activities
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+  @@index([type])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([success])
+}
