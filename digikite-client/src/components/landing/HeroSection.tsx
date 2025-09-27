@@ -18,11 +18,6 @@ const HeroSection: React.FC = () => {
     threshold: 0.1,
   });
 
-  // Debug environment variables
-  console.log('Environment Variables Debug:');
-  console.log('VITE_ASSETS_BASE_URL:', import.meta.env.VITE_ASSETS_BASE_URL);
-  console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-  console.log('All env vars:', import.meta.env);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -266,8 +261,6 @@ const HeroSection: React.FC = () => {
                   style={{ height: '600px', width: '600px' }}
                   onError={() => {
                     console.log('Lottie animation failed to load, showing fallback');
-                    console.log('VITE_ASSETS_BASE_URL:', import.meta.env.VITE_ASSETS_BASE_URL);
-                    console.log('Full URL attempted:', `${import.meta.env.VITE_ASSETS_BASE_URL}/animations/Ai-powered marketing tools abstract.json`);
                     setAnimationFailed(true);
                   }}
                 />
