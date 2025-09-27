@@ -26,7 +26,11 @@
       "Read(//c/Users/nishu/OneDrive/Documents/GITHUB/**)",
       "Bash(rd:*)",
       "Bash(del package-lock.json)",
-      "Bash(/bashes)"
+      "Bash(/bashes)",
+      "Read(//c/Users/nishu/OneDrive/Desktop/IITG MCPCS/IITMD/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
