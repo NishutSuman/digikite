@@ -59,7 +59,7 @@ const HeroSection: React.FC = () => {
             className="flex items-center"
           >
             <img
-              src={`${import.meta.env.VITE_ASSETS_BASE_URL}/images/logos/Digikite.jpg`}
+              src="/images/logos/digikite-logo.png"
               alt="DigiKite Logo"
               className="h-12 w-auto object-contain"
               onError={(e) => {
@@ -256,7 +256,7 @@ const HeroSection: React.FC = () => {
                 <Player
                   autoplay
                   loop
-                  src={`${import.meta.env.VITE_ASSETS_BASE_URL}/animations/Ai-powered marketing tools abstract.json`}
+                  src="/animations/ai-powered-marketing-tools.json"
                   style={{ height: '600px', width: '600px' }}
                   onError={() => {
                     console.log('Lottie animation failed to load, showing fallback');

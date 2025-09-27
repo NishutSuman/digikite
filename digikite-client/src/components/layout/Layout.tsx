@@ -31,7 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <a href="/" className="flex items-center">
               <img
-                src={`${import.meta.env.VITE_ASSETS_BASE_URL}/images/logos/Digikite.jpg`}
+                src="/images/logos/digikite-logo.png"
                 alt="DigiKite Logo"
                 className="h-12 w-auto object-contain"
                 onError={(e) => {

@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
           <motion.div variants={itemVariants} className="lg:col-span-1">
             <div className="flex items-center mb-6">
               <img
-                src={`${import.meta.env.VITE_ASSETS_BASE_URL}/images/logos/Digikite.jpg`}
+                src="/images/logos/digikite-logo.png"
                 alt="DigiKite Logo"
                 className="h-16 w-auto object-contain"
                 onError={(e) => {
