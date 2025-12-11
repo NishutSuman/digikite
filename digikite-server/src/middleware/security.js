@@ -38,9 +38,13 @@ const corsConfig = cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 });
 
+// Skip rate limiting in development for easier testing
+const isDev = env.NODE_ENV === 'development';
+
 const rateLimitConfig = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
-  max: env.RATE_LIMIT_MAX_REQUESTS,
+  max: isDev ? 10000 : env.RATE_LIMIT_MAX_REQUESTS, // Effectively disabled in dev
+  skip: () => isDev, // Skip rate limiting entirely in development
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.',
@@ -61,7 +65,8 @@ const rateLimitConfig = rateLimit({
 
 const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs for auth routes
+  max: isDev ? 10000 : 50, // Effectively disabled in dev
+  skip: () => isDev, // Skip rate limiting entirely in development
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.',

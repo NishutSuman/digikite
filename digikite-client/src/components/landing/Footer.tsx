@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaLinkedin, FaTwitter, FaFacebook, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
-import { MdSecurity } from 'react-icons/md';
-import { IoShieldCheckmark } from 'react-icons/io5';
+import { FaLinkedin, FaTwitter, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { HiShieldCheck } from 'react-icons/hi';
 
 const Footer: React.FC = () => {
   const containerVariants = {
@@ -21,60 +20,123 @@ const Footer: React.FC = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6 },
+      transition: { duration: 0.5 },
     },
   };
 
   const currentYear = new Date().getFullYear();
 
+  const footerLinks = {
+    product: [
+      { name: 'Features', href: '#features' },
+      { name: 'Pricing', href: '#pricing' },
+      { name: 'Guild Platform', href: '/products/guild' },
+      { name: 'Mobile App', href: '#' },
+      { name: 'Integrations', href: '#' },
+    ],
+    company: [
+      { name: 'About Us', href: '/about' },
+      { name: 'Careers', href: '#' },
+      { name: 'Blog', href: '#' },
+      { name: 'Press', href: '#' },
+      { name: 'Contact', href: '/contact' },
+    ],
+    resources: [
+      { name: 'Documentation', href: '#' },
+      { name: 'Help Center', href: '#' },
+      { name: 'API Reference', href: '#' },
+      { name: 'Status Page', href: '#' },
+      { name: 'Community', href: '#' },
+    ],
+    legal: [
+      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Terms of Service', href: '/terms' },
+      { name: 'Refund Policy', href: '/refund' },
+      { name: 'Cookie Policy', href: '#' },
+      { name: 'Security', href: '#' },
+    ],
+  };
+
   return (
-    <footer className="bg-gradient-to-br from-gray-900 to-slate-900 text-white">
+    <footer className="relative bg-[#0a0a0f] border-t border-white/10">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-gradient-to-r from-blue-600/5 to-indigo-600/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] bg-gradient-to-r from-purple-600/5 to-pink-600/5 rounded-full blur-[80px]" />
+      </div>
+
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-16">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
-          className="grid lg:grid-cols-4 md:grid-cols-2 gap-8"
+          className="grid lg:grid-cols-6 md:grid-cols-3 gap-8 lg:gap-12"
         >
-          {/* Company Info */}
-          <motion.div variants={itemVariants} className="lg:col-span-1">
-            <div className="flex items-center mb-6">
+          {/* Company Info - Spans 2 columns */}
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            {/* Logo */}
+            <a href="/" className="flex items-center gap-3 mb-6">
               <img
-                src="/images/logos/digikite-logo.png"
-                alt="DigiKite Logo"
-                className="h-16 w-auto object-contain"
+                src="/brand/DigiKite.avif"
+                alt="DigiKite"
+                className="h-10 w-auto object-contain"
                 onError={(e) => {
-                  // Fallback if logo fails to load
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const fallback = document.getElementById('digikite-footer-fallback');
+                  if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div className="h-16 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
-                <span className="text-white font-bold text-3xl">DigiKite</span>
+              {/* Fallback Text Logo */}
+              <div id="digikite-footer-fallback" className="hidden items-center gap-3">
+                <div className="relative">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">D</span>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-md" />
+                </div>
+                <span className="text-2xl font-bold text-white">
+                  Digi<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Kite</span>
+                </span>
               </div>
-            </div>
-            <p className="text-gray-300 leading-relaxed mb-6">
-              Empowering communities and educational institutions with cutting-edge software solutions.
-              Transforming digital experiences through innovation and excellence.
+            </a>
+
+            <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
+              India's leading technology company building the future of community management with Guild - the complete alumni workspace solution.
             </p>
 
+            {/* Contact Info */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 text-gray-400 text-sm">
+                <FaMapMarkerAlt className="text-blue-400" />
+                <span>Bangalore, Karnataka, India</span>
+              </div>
+              <div className="flex items-center gap-3 text-gray-400 text-sm">
+                <FaPhone className="text-green-400" />
+                <a href="tel:+919876543210" className="hover:text-white transition-colors">+91 98765 43210</a>
+              </div>
+              <div className="flex items-center gap-3 text-gray-400 text-sm">
+                <FaEnvelope className="text-purple-400" />
+                <a href="mailto:hello@digikite.com" className="hover:text-white transition-colors">hello@digikite.com</a>
+              </div>
+            </div>
+
             {/* Social Media */}
-            <div className="flex space-x-4">
+            <div className="flex gap-3">
               {[
-                { name: 'LinkedIn', icon: <FaLinkedin />, href: '#' },
-                { name: 'Twitter', icon: <FaTwitter />, href: '#' },
-                { name: 'Facebook', icon: <FaFacebook />, href: '#' },
-                { name: 'Instagram', icon: <FaInstagram />, href: '#' }
+                { icon: <FaLinkedin />, href: '#', label: 'LinkedIn' },
+                { icon: <FaTwitter />, href: '#', label: 'Twitter' },
+                { icon: <FaInstagram />, href: '#', label: 'Instagram' },
+                { icon: <FaYoutube />, href: '#', label: 'YouTube' },
               ].map((social, index) => (
                 <motion.a
                   key={index}
                   href={social.href}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 text-lg"
-                  title={social.name}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-10 h-10 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                  aria-label={social.label}
                 >
                   {social.icon}
                 </motion.a>
@@ -82,22 +144,13 @@ const Footer: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Products */}
+          {/* Product Links */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-lg font-bold mb-6 text-white">Products</h3>
+            <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-3">
-              {[
-                { name: 'Guild Platform', href: '#products' },
-                { name: 'e-Lib Solution', href: '#products' },
-                { name: 'Custom Development', href: '#services' },
-                { name: 'Digital Transformation', href: '#services' }
-              ].map((link, index) => (
+              {footerLinks.product.map((link, index) => (
                 <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-gray-300 hover:text-blue-400 transition-colors duration-300 flex items-center group"
-                  >
-                    <span className="w-2 h-2 bg-blue-600 rounded-full mr-3 group-hover:bg-blue-400 transition-colors"></span>
+                  <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -105,22 +158,13 @@ const Footer: React.FC = () => {
             </ul>
           </motion.div>
 
-          {/* Services */}
+          {/* Company Links */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-lg font-bold mb-6 text-white">Services</h3>
+            <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-3">
-              {[
-                { name: 'Implementation & Training', href: '#services' },
-                { name: 'Technical Support', href: '#services' },
-                { name: 'System Integration', href: '#services' },
-                { name: 'Consulting Services', href: '#services' }
-              ].map((link, index) => (
+              {footerLinks.company.map((link, index) => (
                 <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-gray-300 hover:text-indigo-400 transition-colors duration-300 flex items-center group"
-                  >
-                    <span className="w-2 h-2 bg-indigo-600 rounded-full mr-3 group-hover:bg-indigo-400 transition-colors"></span>
+                  <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -128,76 +172,58 @@ const Footer: React.FC = () => {
             </ul>
           </motion.div>
 
-          {/* Contact & Support */}
+          {/* Resources Links */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-lg font-bold mb-6 text-white">Contact</h3>
-            <div className="space-y-4">
-              <div className="flex items-start group">
-                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center mr-3 mt-1 group-hover:bg-emerald-500 transition-colors">
-                  <FaMapMarkerAlt className="text-white" />
-                </div>
-                <div>
-                  <p className="text-gray-300 text-sm">
-                    123 Innovation Hub<br />
-                    Tech City, India - 110001
-                  </p>
-                </div>
-              </div>
+            <h4 className="text-white font-semibold mb-4">Resources</h4>
+            <ul className="space-y-3">
+              {footerLinks.resources.map((link, index) => (
+                <li key={index}>
+                  <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
 
-              <div className="flex items-center group">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-500 transition-colors">
-                  <FaPhone className="text-white" />
-                </div>
-                <a href="tel:+919876543210" className="text-gray-300 hover:text-blue-400 transition-colors">
-                  +91 98765 43210
-                </a>
-              </div>
-
-              <div className="flex items-center group">
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3 group-hover:bg-purple-500 transition-colors">
-                  <FaEnvelope className="text-white" />
-                </div>
-                <a href="mailto:info@digikite.com" className="text-gray-300 hover:text-purple-400 transition-colors">
-                  info@digikite.com
-                </a>
-              </div>
-
-              <div className="flex items-center group">
-                <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center mr-3 group-hover:bg-orange-500 transition-colors">
-                  <FaClock className="text-white" />
-                </div>
-                <div className="text-gray-300 text-sm">
-                  Mon - Fri: 9:00 AM - 6:00 PM<br />
-                  <span className="text-gray-400">24/7 Support Available</span>
-                </div>
-              </div>
-            </div>
+          {/* Legal Links */}
+          <motion.div variants={itemVariants}>
+            <h4 className="text-white font-semibold mb-4">Legal</h4>
+            <ul className="space-y-3">
+              {footerLinks.legal.map((link, index) => (
+                <li key={index}>
+                  <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </motion.div>
         </motion.div>
 
-        {/* Newsletter Signup */}
+        {/* Newsletter Section */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          variants={itemVariants}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
-          className="mt-16 pt-8 border-t border-gray-700"
+          className="mt-16 pt-8 border-t border-white/10"
         >
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl font-bold mb-4">Stay Updated</h3>
-            <p className="text-gray-300 mb-6">
-              Subscribe to our newsletter for the latest updates on products, features, and company news.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h4 className="text-white font-semibold mb-2">Subscribe to our newsletter</h4>
+              <p className="text-gray-400 text-sm">Get the latest updates on Guild features and company news.</p>
+            </div>
+            <div className="flex gap-3 max-w-md w-full lg:w-auto">
               <input
                 type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                placeholder="Enter your email"
+                className="flex-1 lg:w-64 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-shadow whitespace-nowrap"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all whitespace-nowrap"
               >
                 Subscribe
               </motion.button>
@@ -205,76 +231,48 @@ const Footer: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Quick Links & Legal */}
+        {/* Trust Badges */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          variants={itemVariants}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
-          className="mt-12 pt-8 border-t border-gray-700"
+          className="mt-8 pt-8 border-t border-white/10"
         >
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-            {/* Quick Links */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-6 text-sm">
-              {[
-                { name: 'Privacy Policy', href: '/privacy' },
-                { name: 'Terms of Service', href: '/terms' },
-                { name: 'Refund Policy', href: '/refund' },
-                { name: 'Support', href: '/contact' },
-                { name: 'About Us', href: '/about' }
-              ].map((link, index) => (
-                <a
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
+              {['ISO 27001', 'GDPR Compliant', 'SOC 2'].map((badge, index) => (
+                <div
                   key={index}
-                  href={link.href}
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400"
                 >
-                  {link.name}
-                </a>
+                  <HiShieldCheck className="text-green-400" />
+                  <span>{badge}</span>
+                </div>
               ))}
             </div>
-
-            {/* Certifications & Trust Badges */}
-            <div className="flex items-center gap-4">
-              {[
-                { name: 'ISO 27001', icon: <IoShieldCheckmark /> },
-                { name: 'GDPR', icon: <MdSecurity /> },
-                { name: 'Security', icon: <IoShieldCheckmark /> }
-              ].map((badge, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.1 }}
-                  className="flex items-center gap-1 px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-300"
-                  title={badge.name}
-                >
-                  <span>{badge.icon}</span>
-                  <span>{badge.name}</span>
-                </motion.div>
-              ))}
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>Made with</span>
+              <span className="text-red-400">♥</span>
+              <span>in India</span>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-gray-950 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="flex flex-col md:flex-row justify-between items-center gap-4"
-          >
-            <p className="text-gray-400 text-sm text-center md:text-left">
-              © {currentYear} DigiKite. All rights reserved. Built with care in India.
+      <div className="relative z-10 border-t border-white/5 bg-[#05050a]">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm text-center md:text-left">
+              © {currentYear} Digikite Infomatrix Pvt Ltd. All rights reserved.
             </p>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <span>Powered by</span>
-              <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent font-semibold">
-                DigiKite Technology
-              </span>
+            <div className="flex items-center gap-6 text-sm">
+              <a href="/privacy" className="text-gray-500 hover:text-white transition-colors">Privacy</a>
+              <a href="/terms" className="text-gray-500 hover:text-white transition-colors">Terms</a>
+              <a href="/refund" className="text-gray-500 hover:text-white transition-colors">Refunds</a>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </footer>

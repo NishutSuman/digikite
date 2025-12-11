@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" fill="none">
+  <!-- Background gradient rectangle for logo icon -->
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#6366F1"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22D3EE"/>
+      <stop offset="100%" style="stop-color:#3B82F6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Main logo icon -->
+  <rect x="5" y="5" width="40" height="40" rx="10" fill="url(#logoGrad)"/>
+
+  <!-- D letter -->
+  <text x="18" y="35" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="white">D</text>
+
+  <!-- Accent square -->
+  <rect x="35" y="35" width="15" height="15" rx="4" fill="url(#accentGrad)"/>
+
+  <!-- DigiKite text -->
+  <text x="55" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold">
+    <tspan fill="white">Digi</tspan><tspan fill="#22D3EE">Kite</tspan>
+  </text>
+</svg>

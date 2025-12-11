@@ -10,6 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// ENUMS
+// ==========================================
+
 enum UserRole {
   USER
   ADMIN
@@ -39,13 +43,68 @@ enum ActivityType {
   FEATURE_USE
   ERROR_OCCURRED
   API_CALL
+  DEMO_REQUEST
+  CLIENT_CREATED
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_RENEWED
+  SUBSCRIPTION_CANCELLED
+  GUILD_PROVISIONED
 }
+
+enum DemoStatus {
+  NEW
+  CONTACTED
+  DEMO_SCHEDULED
+  DEMO_COMPLETED
+  CONVERTED
+  LOST
+}
+
+enum ClientStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CHURNED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  GRACE_PERIOD
+  EXPIRED
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+// ==========================================
+// USER MODEL (Extended)
+// ==========================================
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  password  String?  // Nullable for social login users
+  password  String?
 
   // Authentication fields
   provider           AuthProvider @default(EMAIL)
@@ -62,85 +121,417 @@ model User {
   role      UserRole @default(USER)
   isActive  Boolean  @default(true)
 
+  // Client association (for CLIENT_ADMIN users)
+  clientOrganizationId String?
+  clientOrganization   ClientOrganization? @relation(fields: [clientOrganizationId], references: [id])
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  tickets    Ticket[]
   payments   Payment[]
   activities Activity[]
+  assignedDemoRequests DemoRequest[] @relation("AssignedTo")
 
   @@map("users")
 }
 
-model Ticket {
-  id          String         @id @default(cuid())
-  title       String
-  description String
-  status      String         @default("OPEN")
-  priority    String         @default("MEDIUM")
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+// ==========================================
+// SUBSCRIPTION PLANS (Admin configurable)
+// ==========================================
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
 
-  @@map("tickets")
+  // Plan Details
+  name        String   // "Starter", "Professional", "Enterprise"
+  code        String   @unique // "STARTER", "PROFESSIONAL", "ENTERPRISE"
+  description String?
+
+  // Pricing
+  priceMonthly  Float
+  priceQuarterly Float?
+  priceYearly   Float
+  currency      String   @default("INR")
+
+  // Limits
+  maxUsers      Int      @default(500)
+  storageQuotaMB Int     @default(5120)
+
+  // Features (as JSON for flexibility)
+  features      Json?    // { "events": true, "treasury": true, ... }
+
+  // Status
+  isActive      Boolean  @default(true)
+  isPopular     Boolean  @default(false)
+  sortOrder     Int      @default(0)
+
+  // Trial
+  trialDays     Int      @default(7)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
 }
+
+// ==========================================
+// DEMO REQUESTS (Lead capture)
+// ==========================================
+
+model DemoRequest {
+  id                String   @id @default(cuid())
+
+  // Contact Info
+  organizationName  String
+  contactName       String
+  contactEmail      String
+  contactPhone      String?
+
+  // Organization Details
+  organizationType  String   // SCHOOL, COLLEGE, ASSOCIATION, OTHER
+  estimatedMembers  Int?
+  website           String?
+
+  // Request Details
+  message           String?
+  preferredDate     DateTime?
+  preferredTime     String?
+
+  // Status Tracking
+  status            DemoStatus @default(NEW)
+  notes             String?
+
+  // Assignment
+  assignedToId      String?
+  assignedTo        User?    @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  // Follow-up
+  demoScheduledAt   DateTime?
+  demoCompletedAt   DateTime?
+  demoOutcome       String?
+
+  // Conversion
+  convertedToClientId String? @unique
+  convertedToClient   ClientOrganization? @relation(fields: [convertedToClientId], references: [id])
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("demo_requests")
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ==========================================
+// CLIENT ORGANIZATIONS (Digikite customers)
+// ==========================================
+
+model ClientOrganization {
+  id                String   @id @default(cuid())
+
+  // Basic Info
+  name              String
+  shortName         String
+  contactEmail      String   @unique
+  contactPhone      String?
+  address           String?
+  website           String?
+  logoUrl           String?
+
+  // Organization Details
+  organizationType  String?
+  foundationYear    Int?
+  description       String?
+
+  // Guild Integration
+  guildTenantCode   String?  @unique
+  guildOrgId        String?  @unique
+  isGuildProvisioned Boolean @default(false)
+  provisionedAt     DateTime?
+  guildAdminEmail   String?
+  guildAdminPassword String? // Encrypted, only stored temporarily
+
+  // Status
+  status            ClientStatus @default(PENDING)
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  subscriptions     Subscription[]
+  adminUsers        User[]
+  invoices          Invoice[]
+  payments          Payment[]
+  demoRequest       DemoRequest?
+
+  @@map("client_organizations")
+  @@index([status])
+  @@index([guildTenantCode])
+}
+
+// ==========================================
+// SUBSCRIPTIONS
+// ==========================================
+
+model Subscription {
+  id                    String   @id @default(cuid())
+
+  // Client Link
+  clientOrganizationId  String
+  clientOrganization    ClientOrganization @relation(fields: [clientOrganizationId], references: [id], onDelete: Cascade)
+
+  // Plan Link
+  planId                String
+  plan                  SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  // Billing
+  billingCycle          BillingCycle
+  amount                Float
+  currency              String   @default("INR")
+
+  // Period
+  startDate             DateTime
+  endDate               DateTime
+  trialEndsAt           DateTime?
+
+  // Status
+  status                SubscriptionStatus @default(TRIAL)
+  autoRenew             Boolean  @default(true)
+
+  // Custom Limits (override plan defaults)
+  customMaxUsers        Int?
+  customStorageQuotaMB  Int?
+
+  // Renewal Tracking
+  lastRenewalAt         DateTime?
+  nextRenewalReminder   DateTime?
+  renewalReminderSent   Boolean  @default(false)
+
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  payments              Payment[]
+  invoices              Invoice[]
+
+  @@map("subscriptions")
+  @@index([status])
+  @@index([endDate])
+}
+
+// ==========================================
+// INVOICES
+// ==========================================
+
+model Invoice {
+  id                    String   @id @default(cuid())
+  invoiceNumber         String   @unique
+
+  // Client Link
+  clientOrganizationId  String
+  clientOrganization    ClientOrganization @relation(fields: [clientOrganizationId], references: [id], onDelete: Cascade)
+
+  // Subscription Link
+  subscriptionId        String?
+  subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  // Amount
+  subtotal              Float
+  taxRate               Float    @default(18) // GST percentage
+  taxAmount             Float
+  total                 Float
+  currency              String   @default("INR")
+
+  // Description
+  description           String?
+  lineItems             Json?    // Array of line items
+
+  // Period
+  periodStart           DateTime
+  periodEnd             DateTime
+
+  // Status
+  status                InvoiceStatus @default(DRAFT)
+  dueDate               DateTime
+  paidAt                DateTime?
+
+  // PDF
+  pdfUrl                String?
+
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  payment               Payment?
+
+  @@map("invoices")
+  @@index([status])
+  @@index([clientOrganizationId])
+}
+
+// ==========================================
+// PAYMENTS
+// ==========================================
 
 model Payment {
-  id            String   @id @default(cuid())
-  amount        Float
-  currency      String   @default("INR")
-  status        String
-  paymentMethod String   @default("RAZORPAY")
-  transactionId String?  @unique
-  razorpayOrderId String?
-  razorpayPaymentId String?
-  razorpaySignature String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String   @id @default(cuid())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Amount
+  amount            Float
+  currency          String   @default("INR")
+
+  // Status
+  status            PaymentStatus @default(PENDING)
+
+  // Payment Method
+  paymentMethod     String   @default("RAZORPAY")
+
+  // Razorpay Details
+  razorpayOrderId   String?  @unique
+  razorpayPaymentId String?  @unique
+  razorpaySignature String?
+
+  // Description
+  description       String?
+
+  // Links
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id])
+
+  clientOrganizationId String?
+  clientOrganization   ClientOrganization? @relation(fields: [clientOrganizationId], references: [id])
+
+  subscriptionId    String?
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  invoiceId         String?  @unique
+  invoice           Invoice? @relation(fields: [invoiceId], references: [id])
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@map("payments")
+  @@index([status])
+  @@index([razorpayOrderId])
 }
+
+// ==========================================
+// ACTIVITY LOG
+// ==========================================
 
 model Activity {
   id          String       @id @default(cuid())
   type        ActivityType
   description String
-  metadata    Json?        // Additional data like IP, user agent, etc.
+  metadata    Json?
 
-  // Optional fields for business intelligence
+  // Request Info
   ipAddress    String?
   userAgent    String?
   deviceInfo   Json?
-  location     Json?        // Country, city, etc.
+  location     Json?
   referrer     String?
   sessionId    String?
 
-  // Success/error tracking
+  // Status
   success      Boolean      @default(true)
   errorMessage String?
 
-  // Performance metrics
-  duration     Int?         // In milliseconds
+  // Metrics
+  duration     Int?
+  revenue      Float?
 
-  // Business metrics
-  revenue      Float?       // For payment-related activities
-
-  createdAt DateTime @default(now())
-
-  // Relations
+  // User Link
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
 
   @@map("activities")
   @@index([type])
   @@index([userId])
   @@index([createdAt])
   @@index([success])
+}
+
+// ==========================================
+// ADMIN NOTIFICATIONS
+// ==========================================
+
+model AdminNotification {
+  id          String   @id @default(cuid())
+
+  type        String   // DEMO_REQUEST, PAYMENT_RECEIVED, SUBSCRIPTION_EXPIRING, etc.
+  title       String
+  message     String
+  data        Json?
+
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+
+  // Email notification
+  emailSent   Boolean  @default(false)
+  emailSentAt DateTime?
+
+  createdAt   DateTime @default(now())
+
+  @@map("admin_notifications")
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ==========================================
+// CONTACT SUBMISSIONS
+// ==========================================
+
+enum ContactSubject {
+  DEMO
+  PRICING
+  SUPPORT
+  PARTNERSHIP
+  OTHER
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model ContactSubmission {
+  id            String   @id @default(cuid())
+
+  // Contact Info
+  name          String
+  email         String
+  organization  String?
+  subject       ContactSubject
+  message       String
+
+  // Status
+  status        ContactStatus @default(NEW)
+  notes         String?
+  resolvedAt    DateTime?
+
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("contact_submissions")
+  @@index([status])
+  @@index([createdAt])
 }

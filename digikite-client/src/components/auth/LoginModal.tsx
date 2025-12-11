@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { loginUser, switchModalType } from '../../slices/authSlice';
+import { loginUser, switchModalType, closeAuthModal } from '../../slices/authSlice';
 import GoogleAuthButton from './GoogleAuthButton';
+import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiArrowLeft } from 'react-icons/hi';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -18,7 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const LoginModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoading, error, user } = useAppSelector((state) => state.auth);
+  const { isLoading, error } = useAppSelector((state) => state.auth);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -31,74 +32,94 @@ const LoginModal: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    await dispatch(loginUser(data));
-  };
-
-  // Redirect to previous page after successful login
-  useEffect(() => {
-    if (user && !isLoading && !error) {
-      // Navigate to previous page or home
-      navigate(-1);
+    const result = await dispatch(loginUser(data));
+    if (loginUser.fulfilled.match(result)) {
+      dispatch(closeAuthModal());
+      // Redirect based on user role
+      const user = result.payload;
+      if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+        navigate('/admin');
+      } else {
+        // All other users go to client portal
+        navigate('/portal');
+      }
     }
-  }, [user, isLoading, error, navigate]);
-
+  };
 
   if (showEmailForm) {
     return (
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div>
+        <h1 className="text-2xl font-bold text-white mb-2">
           Welcome Back
         </h1>
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Sign In to DigiKite
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Enter your credentials to access your account
+        <p className="text-gray-400 mb-8">
+          Sign in to access your account
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mb-6">
           <div>
-            <input
-              {...register('email')}
-              type="email"
-              placeholder="Email Address"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <HiMail className="h-5 w-5 text-gray-500" />
+              </div>
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="you@example.com"
+                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+            </div>
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600 text-left">{errors.email.message}</p>
+              <p className="mt-2 text-sm text-red-400">{errors.email.message}</p>
             )}
           </div>
 
-          <div className="relative">
-            <input
-              {...register('password')}
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <HiLockClosed className="h-5 w-5 text-gray-500" />
+              </div>
+              <input
+                {...register('password')}
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                className="w-full pl-10 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                {showPassword ? (
+                  <HiEyeOff className="h-5 w-5" />
+                ) : (
+                  <HiEye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="mt-2 text-sm text-red-400">{errors.password.message}</p>
+            )}
+          </div>
+
+          {/* Forgot Password Link */}
+          <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
-              {showPassword ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              )}
+              Forgot password?
             </button>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600 text-left">{errors.password.message}</p>
-            )}
           </div>
 
           {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
               {error}
             </div>
           )}
@@ -106,24 +127,32 @@ const LoginModal: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 px-4 rounded-xl font-medium shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Signing in...
+              </div>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
 
         <button
           onClick={() => setShowEmailForm(false)}
-          className="text-blue-500 hover:text-blue-600 text-sm mb-6"
+          className="flex items-center justify-center gap-2 text-gray-400 hover:text-white text-sm mb-6 w-full py-2 transition-colors"
         >
-          ← Back to other options
+          <HiArrowLeft className="h-4 w-4" />
+          Back to other options
         </button>
 
-        <div className="text-sm text-gray-600">
+        <div className="text-center text-sm text-gray-400">
           Don't have an account?{' '}
           <button
             onClick={() => dispatch(switchModalType('register'))}
-            className="text-blue-500 hover:text-blue-600 font-medium"
+            className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
           >
             Sign up
           </button>
@@ -133,50 +162,45 @@ const LoginModal: React.FC = () => {
   }
 
   return (
-    <div className="text-center">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        Unlock 12.3 Million+
+    <div>
+      <h1 className="text-2xl font-bold text-white mb-2">
+        Sign in to Guild
       </h1>
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">
-        Design Assets
-      </h1>
-      <p className="text-gray-600 mb-8">
-        Highly customizable 3Ds, Illustrations, Lottie animations, Icons, and their source files.
+      <p className="text-gray-400 mb-8">
+        Access your alumni network and manage your community
       </p>
 
       {/* Social login buttons */}
       <div className="space-y-3 mb-6">
         <GoogleAuthButton text="signin" />
 
-
         <button
           onClick={() => setShowEmailForm(true)}
-          className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition-all"
         >
-          <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-          </svg>
-          Sign in with Email
+          <HiMail className="w-5 h-5 text-gray-400" />
+          Continue with Email
         </button>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-6">
+        <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm mb-6">
           {error}
         </div>
       )}
 
-      <div className="text-sm text-gray-600 mb-6">
-        By signing in, you agree to DigiKite{' '}
-        <a href="#" className="text-blue-500 hover:text-blue-600">Terms of Use</a>,{' '}
-        <a href="#" className="text-blue-500 hover:text-blue-600">Privacy Policy</a>
+      <div className="text-center text-xs text-gray-500 mb-6">
+        By signing in, you agree to DigiKite's{' '}
+        <a href="/terms" className="text-blue-400 hover:text-blue-300">Terms of Use</a>{' '}
+        and{' '}
+        <a href="/privacy" className="text-blue-400 hover:text-blue-300">Privacy Policy</a>
       </div>
 
-      <div className="text-sm text-gray-600">
+      <div className="text-center text-sm text-gray-400">
         Don't have an account?{' '}
         <button
           onClick={() => dispatch(switchModalType('register'))}
-          className="text-blue-500 hover:text-blue-600 font-medium"
+          className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
         >
           Sign up
         </button>

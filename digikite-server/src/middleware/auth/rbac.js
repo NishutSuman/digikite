@@ -49,7 +49,7 @@ const roleBasedAccess = (allowedRoles = []) => {
 };
 
 /**
- * Admin only access middleware
+ * Admin only access middleware (Digikite staff)
  */
 const adminOnly = () => {
   return roleBasedAccess(['ADMIN', 'SUPER_ADMIN']);
@@ -60,6 +60,14 @@ const adminOnly = () => {
  */
 const superAdminOnly = () => {
   return roleBasedAccess(['SUPER_ADMIN']);
+};
+
+/**
+ * User portal access middleware (for USER role)
+ * Also allows admins to access for support purposes
+ */
+const userPortalAccess = () => {
+  return roleBasedAccess(['ADMIN', 'SUPER_ADMIN', 'USER']);
 };
 
 /**
@@ -173,6 +181,7 @@ module.exports = {
   roleBasedAccess,
   adminOnly,
   superAdminOnly,
+  userPortalAccess,
   ownerOrAdmin,
   activeUserOnly,
   verifiedEmailOnly

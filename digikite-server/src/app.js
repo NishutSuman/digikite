@@ -33,11 +33,18 @@ class App {
 
     this.app.set('trust proxy', 1);
 
-    // Activity logging middleware
-    this.app.use(activityLogger({
-      excludePaths: ['/health', '/favicon.ico', '/api-docs'],
-      excludeMethods: ['OPTIONS']
-    }));
+    // Activity logging middleware - DISABLED in development (causes excessive DB writes)
+    // Only enable in production for business intelligence
+    if (env.NODE_ENV === 'production') {
+      this.app.use(activityLogger({
+        excludePaths: ['/health', '/favicon.ico', '/api-docs'],
+        excludeMethods: ['OPTIONS', 'GET'], // Only log mutations, not reads
+        logOnlyAuthenticated: true // Only log authenticated user actions
+      }));
+      logger.info('Activity logging enabled (production mode)');
+    } else {
+      logger.info('Activity logging disabled (development mode)');
+    }
 
     logger.info('Middleware initialized successfully');
   }

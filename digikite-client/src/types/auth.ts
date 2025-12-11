@@ -1,9 +1,15 @@
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+
 export interface User {
   id: string;
   email: string;
   name: string;
   avatar?: string;
-  provider: 'google' | 'email';
+  provider: 'GOOGLE' | 'EMAIL';
+  role: UserRole;
+  isActive: boolean;
+  emailVerified: boolean;
+  clientOrganizationId?: string;
 }
 
 export interface AuthState {

@@ -14,6 +14,23 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ user }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
+  // Get role-based paths
+  const getDashboardPath = () => {
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+      return '/admin';
+    }
+    // All other users go to client portal
+    return '/portal';
+  };
+
+  const getProfilePath = () => {
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+      return '/admin';
+    }
+    // All other users go to client portal
+    return '/portal';
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -30,7 +47,12 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ user }) => {
 
   const handleProfileClick = () => {
     setIsOpen(false);
-    navigate('/profile');
+    navigate(getProfilePath());
+  };
+
+  const handleDashboardClick = () => {
+    setIsOpen(false);
+    navigate(getDashboardPath());
   };
 
   const handleLogout = async () => {
@@ -63,14 +85,14 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ user }) => {
       {/* Profile Picture Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        className="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#0a0a0f]"
       >
         <img
-          className="h-8 w-8 rounded-full object-cover border-2 border-gray-200 hover:border-indigo-300 transition-colors"
+          className="h-8 w-8 rounded-full object-cover border-2 border-white/20 hover:border-blue-400 transition-colors"
           src={getAvatarSrc()}
           alt={`${user.name}'s profile`}
         />
-        <span className="hidden md:block text-gray-700 font-medium">
+        <span className="hidden md:block text-gray-300 font-medium">
           {user.name}
         </span>
         <svg
@@ -83,21 +105,21 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ user }) => {
         </svg>
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu - Dark Theme */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+        <div className="absolute right-0 mt-2 w-72 bg-[#12121a] rounded-xl shadow-2xl ring-1 ring-white/10 z-50 border border-white/10">
           <div className="py-1">
             {/* User Info */}
-            <div className="px-4 py-3 border-b border-gray-100">
+            <div className="px-4 py-3 border-b border-white/10">
               <div className="flex items-center space-x-3">
                 <img
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-10 w-10 rounded-full object-cover flex-shrink-0"
                   src={getAvatarSrc()}
                   alt={`${user.name}'s profile`}
                 />
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                  <div className="text-sm text-gray-500">{user.email}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-white truncate" title={user.name}>{user.name}</div>
+                  <div className="text-sm text-gray-400 truncate" title={user.email}>{user.email}</div>
                 </div>
               </div>
             </div>
@@ -106,7 +128,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ user }) => {
             <div className="py-1">
               <button
                 onClick={handleProfileClick}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
               >
                 <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -114,19 +136,19 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ user }) => {
                 Profile
               </button>
 
-              <a
-                href="/dashboard"
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+              <button
+                onClick={handleDashboardClick}
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
               >
                 <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
                 Dashboard
-              </a>
+              </button>
 
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
               >
                 <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

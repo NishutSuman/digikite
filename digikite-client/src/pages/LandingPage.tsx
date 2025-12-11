@@ -1,33 +1,43 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import HeroSection from '../components/landing/HeroSection';
-import ProductsSection from '../components/landing/ProductsSection';
-import ServicesSection from '../components/landing/ServicesSection';
+import ClientLogoMarquee from '../components/landing/ClientLogoMarquee';
+import FeaturesSection from '../components/landing/FeaturesSection';
+import HowItWorksSection from '../components/landing/HowItWorksSection';
+import PricingSection from '../components/landing/PricingSection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import FAQSection from '../components/landing/FAQSection';
 import Footer from '../components/landing/Footer';
+import { PlansProvider } from '../contexts/PlansContext';
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <HeroSection />
+    <PlansProvider>
+      <div className="min-h-screen bg-[#0a0a0f]">
+        {/* Hero Section - Guild as main product */}
+        <HeroSection />
 
-      {/* Products Showcase */}
-      <ProductsSection />
+        {/* Client Logo Marquee - Trusted Organizations */}
+        <ClientLogoMarquee />
 
-      {/* Services Overview */}
-      <ServicesSection />
+        {/* Features Section - Guild capabilities */}
+        <FeaturesSection />
 
-      {/* Client Testimonials */}
-      <TestimonialsSection />
+        {/* How It Works - Setup process */}
+        <HowItWorksSection />
 
-      {/* FAQ Section */}
-      <FAQSection />
+        {/* Pricing Section - Subscription plans */}
+        <PricingSection />
 
-      {/* Footer */}
-      <Footer />
-    </div>
+        {/* Client Testimonials */}
+        <TestimonialsSection />
+
+        {/* FAQ Section */}
+        <FAQSection />
+
+        {/* Footer */}
+        <Footer />
+      </div>
+    </PlansProvider>
   );
 };
 

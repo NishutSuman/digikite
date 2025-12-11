@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
 const { env } = require('../../config/env');
 const { logger } = require('../../utils/logger');
 const { getUserCache, setUserCache } = require('../cache');
+
+const prisma = new PrismaClient();
 
 // Generate JWT token
 const generateToken = (payload) => {
@@ -69,13 +72,44 @@ const authenticateToken = async (req, res, next) => {
     let user = getUserCache(decoded.userId);
 
     if (!user) {
-      // If not in cache, you would typically fetch from database
-      // For now, we'll use the decoded token data
+      // Fetch from database to get role and clientOrganizationId
+      const dbUser = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+          emailVerified: true,
+          provider: true,
+          clientOrganizationId: true,
+        },
+      });
+
+      if (!dbUser) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      if (!dbUser.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: 'Account is deactivated'
+        });
+      }
+
       user = {
-        id: decoded.userId,
-        email: decoded.email,
-        name: decoded.name,
-        provider: decoded.provider || 'email'
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        role: dbUser.role,
+        isActive: dbUser.isActive,
+        emailVerified: dbUser.emailVerified,
+        provider: dbUser.provider,
+        clientOrganizationId: dbUser.clientOrganizationId,
       };
 
       // Cache user data
