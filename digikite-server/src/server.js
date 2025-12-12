@@ -62,4 +62,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = startServer;
+module.exports = startServer;// Trigger Railway redeploy - Fri Dec 12 07:42:43 IST 2025
