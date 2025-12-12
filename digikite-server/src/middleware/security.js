@@ -12,7 +12,7 @@ const helmetConfig = helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://accounts.google.com", "https://gsi.googleapis.com", "https://*.googleapis.com"],
       imgSrc: ["'self'", "data:", "https:", "https://accounts.google.com", "https://gsi.googleapis.com", "https://*.googleusercontent.com"],
       frameSrc: ["'self'", "https://accounts.google.com", "https://gsi.googleapis.com", "https://*.google.com"],
-      connectSrc: ["'self'", "https://accounts.google.com", "https://gsi.googleapis.com", "https://*.googleapis.com"],
+      connectSrc: ["'self'", "https://accounts.google.com", "https://gsi.googleapis.com", "https://*.googleapis.com", "https://digikite.vercel.app", "https://digikite.onrender.com"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -20,22 +20,51 @@ const helmetConfig = helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginOpenerPolicy: env.NODE_ENV === 'development' ? false : { policy: "same-origin-allow-popups" },
+  // Disable COOP entirely to allow Google OAuth popup communication
+  crossOriginOpenerPolicy: false,
 });
+
+// Allowed origins for CORS - includes Vercel production domain
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'https://digikite.vercel.app',
+  'https://digikite-git-main-digikite.vercel.app',
+  ...env.CORS_ORIGIN,
+];
 
 const corsConfig = cors({
   origin: (origin, callback) => {
-    // Allow no origin (e.g., mobile apps, curl) or localhost origins
-    if (!origin || origin.includes('localhost') || env.CORS_ORIGIN.includes(origin)) {
+    // Allow no origin (e.g., mobile apps, curl, server-to-server)
+    if (!origin) {
       callback(null, true);
-    } else {
-      logger.warn(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+    // Allow localhost origins
+    if (origin.includes('localhost')) {
+      callback(null, true);
+      return;
+    }
+    // Allow Vercel preview deployments
+    if (origin.includes('vercel.app')) {
+      callback(null, true);
+      return;
+    }
+    // Check against allowed origins list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    logger.warn(`CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
-  credentials: env.CORS_CREDENTIALS,
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cache-Control'],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  maxAge: 86400, // 24 hours preflight cache
 });
 
 // Skip rate limiting in development for easier testing

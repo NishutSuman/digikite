@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const { env } = require('./config/env');
 const {
   helmetConfig,
@@ -23,6 +24,16 @@ class App {
     this.app.use(requestLogger);
 
     this.app.use(helmetConfig);
+
+    // Handle preflight OPTIONS requests explicitly BEFORE corsConfig
+    this.app.options('*', cors({
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cache-Control'],
+      exposedHeaders: ['Content-Length', 'Content-Type'],
+      maxAge: 86400,
+    }));
 
     this.app.use(corsConfig);
 
