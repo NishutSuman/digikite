@@ -25,8 +25,9 @@ class App {
 
     this.app.use(helmetConfig);
 
-    // Handle preflight OPTIONS requests explicitly BEFORE corsConfig
-    this.app.options('*', cors({
+    // CORS middleware - handles preflight and regular requests
+    // Using cors() directly with permissive settings for all routes
+    this.app.use(cors({
       origin: true,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -34,8 +35,6 @@ class App {
       exposedHeaders: ['Content-Length', 'Content-Type'],
       maxAge: 86400,
     }));
-
-    this.app.use(corsConfig);
 
     this.app.use(rateLimitConfig);
 
